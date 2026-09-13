@@ -9,6 +9,10 @@ const createToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET);
 };
 
+const createAdminToken = (email) => {
+    return jwt.sign({ email, role: "admin" }, process.env.JWT_SECRET);
+};
+
 
 //Route for loginuser//
 const loginUser = async (req, res) => {
@@ -72,6 +76,24 @@ const token = createToken(user._id);
 //route for admin login
 
 const adminLogin = async(req,res)=>{
+    try {
+        const { email, password } = req.body;
+        const adminEmail = process.env.ADMIN_EMAIL;
+        const adminPassword = process.env.ADMIN_PASSWORD;
 
+        if (!email || !password) {
+            return res.json({ success: false, message: "Email and password are required" });
+        }
+
+        if (email !== adminEmail || password !== adminPassword) {
+            return res.json({ success: false, message: "Invalid admin credentials" });
+        }
+
+        const token = createAdminToken(email);
+        res.json({ success: true, token });
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
 }
 export { loginUser, registerUser, adminLogin };
