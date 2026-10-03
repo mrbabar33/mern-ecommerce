@@ -2,13 +2,20 @@ import jwt from "jsonwebtoken";
 
 const adminAuth = (req, res, next) => {
 	try {
-		const authorization = req.headers.authorization;
+		const authHeader = req.headers.authorization || req.headers.token;
 
-		if (!authorization || !authorization.startsWith("Bearer ")) {
+		if (!authHeader) {
 			return res.status(401).json({ success: false, message: "Admin authorization required" });
 		}
 
-		const token = authorization.split(" ")[1];
+		const token = authHeader.startsWith("Bearer ")
+			? authHeader.split(" ")[1]
+			: authHeader;
+
+		if (!token) {
+			return res.status(401).json({ success: false, message: "Admin authorization required" });
+		}
+
 		const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
 		if (decoded.role !== "admin") {
